@@ -91,3 +91,18 @@ def create_character(name: str, stat_list: list, stat_rank_order: list) -> Chara
             stat_to_modify=stat_rank_order[i], stat_number=stat_list[i])
     character.set_hitpoints()
     return character
+
+
+def create_character_easy(name: str) -> dnd_mechanics.Character:
+    """
+    Creates a character given just a string for a name
+    """
+    stat_list = rollSixStats()
+    stat_rank_order = ["dex", "str", "int", "con", "cha", "wis"]
+    character = dnd_mechanics.create_character(
+        name=name, stat_list=stat_list, stat_rank_order=stat_rank_order
+    )
+    katana = dnd_mechanics.Weapon
+    character.equip_weapon(katana)
+
+    return character
