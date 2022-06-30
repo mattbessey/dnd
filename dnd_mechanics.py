@@ -43,7 +43,7 @@ class Character(object):
         print(f"{self.name} gets attacked")
         if attack_dictionary["to_hit"] >= self.armor_class:
             print("it's a hit")
-            self.takeDamage(attack_dictionary["damage"])
+            self.take_damage(attack_dictionary["damage"])
         else:
             print("it's a miss")
 
