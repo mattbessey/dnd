@@ -27,5 +27,9 @@ def findStatModifier(stat: int) -> int:
     return math.floor((stat - 10) / 2)
 
 
-def roll_dice(number, die_type):
-    return sum([random.randint(1, die_type) for _ in range(number)])
+def roll_dice(die: list):
+    """
+    rolls dice of type [number, type]
+    e.g., 3d6 = [3, 6]
+    """
+    return sum([random.randint(1, die[1]) for _ in range(die[0])])

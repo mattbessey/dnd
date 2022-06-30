@@ -11,9 +11,9 @@ class Weapon(object):
 
     def deal_damage(self, is_crit: bool = False):
         if is_crit:
-            return roll_dice(*self.damage_die) + roll_dice(*self.damage_die) + self.modifier
+            return roll_dice(self.damage_die) + roll_dice(self.damage_die) + self.modifier
         else:
-            return roll_dice(*self.damage_die) + self.modifier
+            return roll_dice(self.damage_die) + self.modifier
 
 
 class Character(object):
@@ -37,7 +37,7 @@ class Character(object):
         # first level shouldn't have a roll
         con_mod = self.get_stat_mod(self.con)
         self.hitpoints = roll_dice(
-            self.hit_die[0] - 1, self.hit_die[1]) + (con_mod * self.hit_die[0]) + self.hit_die[1]
+            self.hit_die) + (con_mod * self.hit_die[0]) + self.hit_die[1]
 
     def get_attacked(self, attack_dictionary: dict):
         print(f"{self.name} gets attacked")
@@ -58,7 +58,7 @@ class Character(object):
     def attack(self, attack_stat: int = "str"):
         modifier = self.get_stat_mod(getattr(self, attack_stat))
 
-        roll = roll_dice(1, 20)
+        roll = roll_dice([1, 20])
 
         to_hit = roll + modifier
 
@@ -72,7 +72,7 @@ class Character(object):
         return {"to_hit": to_hit, "damage": damage}
 
     def roll_for_initiative(self):
-        self.initiative = roll_dice(1, 20) + self.get_stat_mod(self.dex)
+        self.initiative = roll_dice([1, 20]) + self.get_stat_mod(self.dex)
 
     def change_hitpoints(self, amount: int = 0):
         self.hitpoints += amount
@@ -93,16 +93,16 @@ def create_character(name: str, stat_list: list, stat_rank_order: list) -> Chara
     return character
 
 
-def create_character_easy(name: str) -> dnd_mechanics.Character:
+def create_character_easy(name: str) -> Character:
     """
     Creates a character given just a string for a name
     """
     stat_list = rollSixStats()
     stat_rank_order = ["dex", "str", "int", "con", "cha", "wis"]
-    character = dnd_mechanics.create_character(
+    character = create_character(
         name=name, stat_list=stat_list, stat_rank_order=stat_rank_order
     )
-    katana = dnd_mechanics.Weapon
+    katana = Weapon()
     character.equip_weapon(katana)
 
     return character
