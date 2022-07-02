@@ -17,12 +17,14 @@ class Weapon(object):
 
 
 class Character(object):
-    def __init__(self, name: str, hit_die: list = [1, 10]):
+    def __init__(self, name: str, hit_die: list = [1, 10], stat_list: list =
+                 ["str", "dex", "con", "int", "wis", "cha"]):
         self.name = name
         self.hit_die = hit_die
         self.state = "alive"
         self.armor_class = 15
         self.initiative = 0
+        self.stat_list = stat_list
 
         # set attributes
         self.str = self.dex = self.con = self.int = self.wis = self.cha = 0
@@ -78,14 +80,14 @@ class Character(object):
         self.hitpoints += amount
 
 
-def create_character(name: str, stat_list: list, stat_rank_order: list) -> Character:
+def create_character(stat_list: list, stat_rank_order: list, name: str = "random_character") -> Character:
     """
     Creates a Character with given name.
     Stats are taken from stat_list and assigned
     in descending rank order based on stat_rank_order
     """
     stat_list.sort(reverse=True)
-    character = Character(name)
+    character = Character(name, stat_list=stat_list)
     for i in range(len(stat_rank_order)):
         character.set_stat(
             stat_to_modify=stat_rank_order[i], stat_number=stat_list[i])
@@ -106,3 +108,27 @@ def create_character_easy(name: str) -> Character:
     character.equip_weapon(katana)
 
     return character
+
+
+def fight_to_death(character1: Character, character2: Character):
+    character1.roll_for_initiative()
+    character2.roll_for_initiative()
+    turn_count = 0
+
+    if character1.initiative > character2.initiative:
+        while character1.state == "alive" and character2.state == "alive":
+            turn_count += 1
+            character2.get_attacked(character1.attack())
+            character1.get_attacked(character2.attack())
+
+    elif character2.initiative > character1.initiative:
+        while character1.state == "alive" and character2.state == "alive":
+            turn_count += 1
+            character1.get_attacked(character1.attack())
+            character2.get_attacked(character2.attack())
+
+    if character1.state == "alive":
+        return [character1, turn_count]
+
+    elif character2.state == "alive":
+        return [character2, turn_count]
