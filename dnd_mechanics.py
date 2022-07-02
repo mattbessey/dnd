@@ -1,4 +1,5 @@
 from dice_rollers import rollSixStats, findStatModifier, roll_dice
+import itertools
 
 
 class Weapon(object):
@@ -57,7 +58,7 @@ class Character(object):
     def equip_weapon(self, weapon: Weapon):
         self.weapon = weapon
 
-    def attack(self, attack_stat: int = "str"):
+    def attack(self, attack_stat: int = "str") -> dict:
         modifier = self.get_stat_mod(getattr(self, attack_stat))
 
         roll = roll_dice([1, 20])
@@ -108,6 +109,33 @@ def create_character_easy(name: str) -> Character:
     character.equip_weapon(katana)
 
     return character
+
+
+def create_all_character_variations(stat_rolls: list = None):
+    """
+    Creates character for each permutation of stat orders.
+    Can either take a fixed list of stat rolls or
+    Generate stats for each character randomly
+    """
+    stat_list = ["str", "dex", "con", "int", "wis", "cha"]
+    permutations = list(itertools.permutations(stat_list))
+    generated_characters = []
+
+    if stat_rolls:
+        for i in range(len(permutations)):
+            name = "character_" + str(i)
+            character = create_character(
+                name=name, stat_rank_order=permutations[i], stat_list=stat_rolls)
+            generated_characters.append(character)
+    else:
+        for i in range(len(permutations)):
+            name = "character_" + str(i)
+            stat_rolls = rollSixStats()
+            character = create_character(
+                name=name, stat_rank_order=permutations[i], stat_list=stat_rolls)
+            generated_characters.append(character)
+
+    return generated_characters
 
 
 def fight_to_death(character1: Character, character2: Character):
