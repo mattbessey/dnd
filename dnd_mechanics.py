@@ -1,5 +1,6 @@
 from dice_rollers import rollSixStats, findStatModifier, roll_dice
 import itertools
+import statistics
 
 
 class Weapon(object):
@@ -26,6 +27,8 @@ class Character(object):
         self.armor_class = 15
         self.initiative = 0
         self.stat_list = stat_list
+        self.level = 1
+        self.weapon = Weapon(damage_die=[1, 1])
 
         # set attributes
         self.str = self.dex = self.con = self.int = self.wis = self.cha = 0
@@ -142,21 +145,63 @@ def fight_to_death(character1: Character, character2: Character):
     character1.roll_for_initiative()
     character2.roll_for_initiative()
     turn_count = 0
+    character1_attacks = []
+    character2_attacks = []
 
     if character1.initiative > character2.initiative:
         while character1.state == "alive" and character2.state == "alive":
             turn_count += 1
-            character2.get_attacked(character1.attack())
-            character1.get_attacked(character2.attack())
+
+            attack = character1.attack()
+            character1_attacks.append(attack)
+            character2.get_attacked(attack)
+
+            attack = character2.attack()
+            character2_attacks.append(attack)
+            character1.get_attacked(attack)
 
     elif character2.initiative > character1.initiative:
         while character1.state == "alive" and character2.state == "alive":
             turn_count += 1
-            character1.get_attacked(character1.attack())
-            character2.get_attacked(character2.attack())
+
+            attack = character2.attack()
+            character2_attacks.append(attack)
+            character1.get_attacked(attack)
+
+            attack = character1.attack()
+            character1_attacks.append(attack)
+            character2.get_attacked(attack)
 
     if character1.state == "alive":
-        return [character1, turn_count]
+        return {"winner": character1,
+                "loser": character2,
+                "turn_count": turn_count,
+                "character1_attacks": character1_attacks,
+                "character2_attacks": character2_attacks}
 
     elif character2.state == "alive":
-        return [character2, turn_count]
+        return {"winner": character2,
+                "loder": character1,
+                "turn_count": turn_count,
+                "character1_attacks": character1_attacks,
+                "character2_attacks": character2_attacks}
+
+
+def summarize_character_list(character_list: list,
+                             stats_to_analyze: list = ["level", "hitpoints", "str",
+                                                       "dex", "con", "int", "wis", "cha"]) -> dict:
+    """
+    Takes a list of characters and summarizes their stats.
+    """
+    stat_dict = {}
+
+    for _ in character_list:
+        for stat in stats_to_analyze:
+            stat_for_all_chars = [getattr(i, stat) for i in characters]
+            mean = statistics.mean(stat_for_all_chars)
+            stdev = statistics.stdev(stat_for_all_chars)
+            temp_dict = {"mean": mean, "stdev": stdev,
+                         "full_list": stat_for_all_chars}
+            stat_dict[stat] = temp_dict
+
+    return stat_dict
