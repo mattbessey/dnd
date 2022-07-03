@@ -1,6 +1,7 @@
 from dice_rollers import rollSixStats, findStatModifier, roll_dice
 import itertools
 import statistics
+import random
 
 
 class Weapon(object):
@@ -105,6 +106,7 @@ def create_character_easy(name: str) -> Character:
     """
     stat_list = rollSixStats()
     stat_rank_order = ["dex", "str", "int", "con", "cha", "wis"]
+    random.shuffle(stat_rank_order)
     character = create_character(
         name=name, stat_list=stat_list, stat_rank_order=stat_rank_order
     )
@@ -205,3 +207,14 @@ def summarize_character_list(character_list: list,
             stat_dict[stat] = temp_dict
 
     return stat_dict
+
+
+def fight_random_characters(number_of_fights: int) -> list:
+    all_fights = []
+    for _ in range(number_of_fights):
+        character1 = create_character_easy("character")
+        character2 = create_character_easy("character")
+        fight = fight_to_death(character1, character2)
+        all_fights.append(fight)
+
+    return all_fights
