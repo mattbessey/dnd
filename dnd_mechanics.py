@@ -30,6 +30,8 @@ class Character(object):
         self.stat_list = stat_list
         self.level = 1
         self.weapon = Weapon(damage_die=[1, 1])
+        self.hitpoints = 0
+        self.max_hitpoints = 0
 
         # set attributes
         self.str = self.dex = self.con = self.int = self.wis = self.cha = 0
