@@ -45,7 +45,7 @@ class Character(object):
     def set_hitpoints(self):
         # first level shouldn't have a roll
         con_mod = self.get_stat_mod(self.con)
-        self.hitpoints = roll_dice(
+        self.max_hitpoints = roll_dice(
             self.hit_die) + (con_mod * self.hit_die[0]) + self.hit_die[1]
 
     def get_attacked(self, attack_dictionary: dict):
@@ -85,6 +85,9 @@ class Character(object):
 
     def change_hitpoints(self, amount: int = 0):
         self.hitpoints += amount
+
+    def reset_hitpoints(self):
+        self.hitpoints = self.max_hitpoints
 
 
 def create_character(stat_list: list, stat_rank_order: list, name: str = "random_character") -> Character:
