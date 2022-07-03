@@ -174,12 +174,34 @@ def fight_to_death(character1: Character, character2: Character):
 
     if character1.state == "alive":
         return {"winner": character1,
+                "loser": character2,
                 "turn_count": turn_count,
                 "character1_attacks": character1_attacks,
                 "character2_attacks": character2_attacks}
 
     elif character2.state == "alive":
-        return {"winner": character1,
+        return {"winner": character2,
+                "loder": character1,
                 "turn_count": turn_count,
                 "character1_attacks": character1_attacks,
                 "character2_attacks": character2_attacks}
+
+
+def summarize_character_list(character_list: list,
+                             stats_to_analyze: list = ["level", "hitpoints", "str",
+                                                       "dex", "con", "int", "wis", "cha"]) -> dict:
+    """
+    Takes a list of characters and summarizes their stats.
+    """
+    stat_dict = {}
+
+    for _ in character_list:
+        for stat in stats_to_analyze:
+            stat_for_all_chars = [getattr(i, stat) for i in characters]
+            mean = statistics.mean(stat_for_all_chars)
+            stdev = statistics.stdev(stat_for_all_chars)
+            temp_dict = {"mean": mean, "stdev": stdev,
+                         "full_list": stat_for_all_chars}
+            stat_dict[stat] = temp_dict
+
+    return stat_dict
