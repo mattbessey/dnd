@@ -1,5 +1,6 @@
 from dice_rollers import rollSixStats, findStatModifier, roll_dice
 import itertools
+import statistics
 
 
 class Weapon(object):
