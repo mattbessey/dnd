@@ -49,12 +49,9 @@ class Character(object):
             self.hit_die) + (con_mod * self.hit_die[0]) + self.hit_die[1]
 
     def get_attacked(self, attack_dictionary: dict):
-        print(f"{self.name} gets attacked")
+
         if attack_dictionary["to_hit"] >= self.armor_class:
-            print("it's a hit")
             self.take_damage(attack_dictionary["damage"])
-        else:
-            print("it's a miss")
 
     def take_damage(self, damage: int):
         if damage >= self.hitpoints:
@@ -214,11 +211,25 @@ def summarize_character_list(character_list: list,
     return stat_dict
 
 
-def fight_random_characters(number_of_fights: int) -> list:
+def fight_random_characters(number_of_fights: int, character1: Character = None, character2: Character = None, complete_random=True) -> list:
     all_fights = []
-    for _ in range(number_of_fights):
+
+    # check if characters assigned, else generate random characters
+    if character1:
+        character1 = character1
+    else:
         character1 = create_character_easy("character")
-        character2 = create_character_easy("character")
+
+    if character2:
+        character2 = character2
+    else:
+        character2 = create_character_easy("create_character")
+
+    for _ in range(number_of_fights):
+        if complete_random == True:
+            character1 = create_character_easy("character")
+            character2 = create_character_easy("character")
+
         fight = fight_to_death(character1, character2)
         all_fights.append(fight)
 
