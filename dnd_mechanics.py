@@ -2,6 +2,8 @@ from dice_rollers import rollSixStats, findStatModifier, roll_dice
 import itertools
 import statistics
 import random
+import pandas as pd
+import numpy as np
 
 
 class Weapon(object):
@@ -49,12 +51,9 @@ class Character(object):
             self.hit_die) + (con_mod * self.hit_die[0]) + self.hit_die[1]
 
     def get_attacked(self, attack_dictionary: dict):
-        print(f"{self.name} gets attacked")
+
         if attack_dictionary["to_hit"] >= self.armor_class:
-            print("it's a hit")
             self.take_damage(attack_dictionary["damage"])
-        else:
-            print("it's a miss")
 
     def take_damage(self, damage: int):
         if damage >= self.hitpoints:
@@ -149,6 +148,8 @@ def create_all_character_variations(stat_rolls: list = None):
 
 
 def fight_to_death(character1: Character, character2: Character):
+    character1.hitpoints = character1.max_hitpoints
+    character2.hitpoints = character2.max_hitpoints
     character1.roll_for_initiative()
     character2.roll_for_initiative()
     turn_count = 0
@@ -180,18 +181,31 @@ def fight_to_death(character1: Character, character2: Character):
             character2.get_attacked(attack)
 
     if character1.state == "alive":
-        return {"winner": character1,
-                "loser": character2,
-                "turn_count": turn_count,
-                "character1_attacks": character1_attacks,
-                "character2_attacks": character2_attacks}
+        return {
+            "winner": character1,
+            "loser": character2,
+            "turn_count": turn_count,
+            "character1_attacks": character1_attacks,
+            "character2_attacks": character2_attacks
+        }
 
     elif character2.state == "alive":
-        return {"winner": character2,
-                "loder": character1,
-                "turn_count": turn_count,
-                "character1_attacks": character1_attacks,
-                "character2_attacks": character2_attacks}
+        return {
+            "winner": character2,
+            "loser": character1,
+            "turn_count": turn_count,
+            "character1_attacks": character1_attacks,
+            "character2_attacks": character2_attacks
+        }
+
+    else:
+        return {
+            "winner": None,
+            "loser": None,
+            "turn_count": turn_count,
+            "character1_attacks": character1_attacks,
+            "character2_attacks": character2_attacks
+        }
 
 
 def summarize_character_list(character_list: list,
@@ -214,12 +228,55 @@ def summarize_character_list(character_list: list,
     return stat_dict
 
 
-def fight_random_characters(number_of_fights: int) -> list:
+def fight_random_characters(number_of_fights: int, character1: Character = None, character2: Character = None, complete_random=True) -> list:
     all_fights = []
-    for _ in range(number_of_fights):
+
+    # check if characters assigned, else generate random characters
+    if character1:
+        character1 = character1
+    else:
         character1 = create_character_easy("character")
-        character2 = create_character_easy("character")
+
+    if character2:
+        character2 = character2
+    else:
+        character2 = create_character_easy("create_character")
+
+    for _ in range(number_of_fights):
+        if complete_random == True:
+            character1 = create_character_easy("character")
+            character2 = create_character_easy("character")
+
         fight = fight_to_death(character1, character2)
         all_fights.append(fight)
 
     return all_fights
+
+
+def extract_stat_df(characters: list) -> pd.DataFrame:
+    stat_data = pd.DataFrame(columns=["character", "stat", "value"])
+    all_stats = ["str", "dex", "con", "int", "wis", "cha"]
+    for character in characters:
+        for stat in all_stats:
+            temp_df = pd.DataFrame(
+                [[character, stat, eval("character.%s" % stat)]],
+                columns=["character", "stat", "value"]
+            )
+            stat_data = stat_data.append(temp_df)
+
+    stat_data["value"] = stat_data["value"].apply(pd.np.float64)
+    stat_data["character"] = stat_data["character"].apply(str)
+    stat_data["stat_rank"] = stat_data.groupby(
+        "character")["value"].rank("dense", ascending=False)
+
+    summarized_stat_data = pd.DataFrame(
+        columns=["str", "dex", "con", "int", "wis", "cha"])
+    mean = stat_data.groupby("stat")["value"].mean()
+    mean.name = 'mean'
+    rank = stat_data.groupby("stat")["stat_rank"].mean() + 1
+    rank.name = 'avg rank'
+    summarized_stat_data = summarized_stat_data.append(mean)
+    summarized_stat_data = summarized_stat_data.append(rank)
+
+    return summarized_stat_data
+    # return stat_data
